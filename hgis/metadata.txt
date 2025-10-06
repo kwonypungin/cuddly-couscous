@@ -1,0 +1,24 @@
+[general]
+name=Hgis
+qgisMinimumVersion=3.0
+description=GIS program for archaeological excavation research
+version=0.1
+author=Jules
+email=jules@example.com
+
+[ui-strings]
+menu_name=Hgis
+description=GIS program for archaeological excavation research (Hgis)
+about=This plugin is a GIS program specialized for archaeological excavation research.
+translation_path=i18n
+python_module=hgis
+plugin_icon=icon.png
+main_class=Hgis
+help_url=
+tracker_url=
+repository_url=
+category=Vector
+tags=archaeology,gis,korea
+experimental=True
+deprecated=False
+hasProcessingProvider=False
