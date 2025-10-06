@@ -1,28 +1,36 @@
-# -*- coding: utf-8 -*-
-
 import os
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QDialog, QInputDialog
+from qgis.PyQt.QtWidgets import QMainWindow, QInputDialog
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRasterLayer
+from qgis.gui import QgsMapCanvas, QgsLayerTreeView
 
-# This loads your UI file so that PyQt can populate the plugin with the elements from Qt Designer
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'forms', 'hgis_dialog_base.ui'))
+# Load the UI file
+FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'main_window.ui'))
 
-
-class HgisDialog(QDialog, FORM_CLASS):
-    def __init__(self, iface, parent=None):
+class MainWindow(QMainWindow, FORM_CLASS):
+    def __init__(self, parent=None):
         """Constructor."""
-        super(HgisDialog, self).__init__(parent)
+        super(MainWindow, self).__init__(parent)
         self.setupUi(self)
-        self.iface = iface
-        self.btn_coords.clicked.connect(self.set_korean_crs)
+
+        # Set up the map canvas
+        self.mapCanvas = QgsMapCanvas()
+        self.gridLayout.addWidget(self.mapCanvas, 0, 1) # Add canvas to the grid layout
+
+        # Set up the layer tree view
+        self.layerTreeView = QgsLayerTreeView()
+        self.layerTreeView.setCanvas(self.mapCanvas)
+        self.dockWidget.setWidget(self.layerTreeView) # Add layer tree to the dock
+
+        # Connect the project's layer tree to our view
+        self.layerTreeView.setModel(QgsProject.instance().layerTreeRoot())
+
+        # Connect buttons to placeholder functions
+        self.btn_coords.clicked.connect(self.set_coordinate_system)
         self.btn_bg_map.clicked.connect(self.add_background_map)
         self.btn_georef.clicked.connect(self.open_georeferencer)
         self.btn_draw.clicked.connect(self.open_drawing_tools)
         self.btn_export.clicked.connect(self.export_data)
-        self.btn_layer_manager.clicked.connect(self.open_layer_manager)
 
         self.korean_crs_list = {
             "Bessel (Tokyo) / Korea Central Belt (EPSG:5174)": "EPSG:5174",
@@ -35,7 +43,9 @@ class HgisDialog(QDialog, FORM_CLASS):
             "UTM Zone 52N (WGS 84) (EPSG:32652)": "EPSG:32652",
         }
 
-    def set_korean_crs(self):
+        print("Main window initialized.")
+
+    def set_coordinate_system(self):
         """Show a dialog to select and apply a Korean CRS to the project."""
         crs_name, ok = QInputDialog.getItem(self, "Select Korean Coordinate System",
                                             "Coordinate Systems:", list(self.korean_crs_list.keys()), 0, False)
@@ -43,8 +53,8 @@ class HgisDialog(QDialog, FORM_CLASS):
         if ok and crs_name:
             epsg_code = self.korean_crs_list[crs_name]
             crs = QgsCoordinateReferenceSystem(epsg_code)
-            QgsProject.instance().setCrs(crs)
-            self.iface.messageBar().pushMessage("Success", f"Project CRS set to {crs_name}", level=0, duration=3)
+            self.mapCanvas.setDestinationCrs(crs)
+            print(f"Map canvas CRS set to {crs_name}")
 
     def add_background_map(self):
         """Add a background map (OpenStreetMap) to the project."""
@@ -52,28 +62,17 @@ class HgisDialog(QDialog, FORM_CLASS):
         rlayer = QgsRasterLayer(url, "OpenStreetMap", "wms")
 
         if not rlayer.isValid():
-            self.iface.messageBar().pushMessage("Error", "Failed to load background map.", level=2, duration=5)
+            print("Error: Failed to load background map.")
             return
 
         QgsProject.instance().addMapLayer(rlayer)
-        self.iface.messageBar().pushMessage("Success", "OpenStreetMap background map added.", level=0, duration=3)
+        print("OpenStreetMap background map added.")
 
     def open_georeferencer(self):
-        """Open the QGIS Georeferencer."""
-        try:
-            # In QGIS 3, the georeferencer is a core plugin
-            self.iface.georeferencer().show()
-        except Exception as e:
-            self.iface.messageBar().pushMessage("Error", f"Could not open Georeferencer: {e}", level=2, duration=5)
+        print("Georeferencer feature is planned for a future version.")
 
     def open_drawing_tools(self):
-        """Placeholder for drawing tools functionality."""
-        self.iface.messageBar().pushMessage("Info", "Drawing tools feature is under development.", level=1, duration=5)
+        print("Drawing tools feature is planned for a future version.")
 
     def export_data(self):
-        """Placeholder for export functionality."""
-        self.iface.messageBar().pushMessage("Info", "Export feature is under development.", level=1, duration=5)
-
-    def open_layer_manager(self):
-        """Placeholder for layer management functionality."""
-        self.iface.messageBar().pushMessage("Info", "Layer Management feature is under development.", level=1, duration=5)
+        print("Export feature is planned for a future version.")

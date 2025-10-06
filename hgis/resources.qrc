@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/hgis" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
